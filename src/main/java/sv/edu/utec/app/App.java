@@ -1,0 +1,32 @@
+package sv.edu.utec.app;
+
+import com.mongodb.MongoException;
+import sv.edu.utec.datos.ConexionMongo;
+import sv.edu.utec.datos.MongoProductoRepositorio;
+import sv.edu.utec.datos.ProductoRepositorio;
+import java.util.Scanner;
+
+/**
+ * Punto de arranque: aquí, y solo aquí, se decide que el repositorio
+ * es de MongoDB. Para Firestore o PostgreSQL se cambia una línea.
+ */
+public class App {
+    public static void main(String[] args) {
+        try (Scanner entrada = new Scanner(System.in)) {
+            ProductoRepositorio repo =
+                    new MongoProductoRepositorio(ConexionMongo.getBaseDeDatos());
+
+            if (repo.listarTodos().isEmpty()) {
+                int n = repo.insertarVarios(DatosDemo.productos());
+                System.out.println("Coleccion vacia: se cargaron " + n + " productos de ejemplo.");
+            }
+
+            new MenuInventario(repo, entrada).iniciar();
+
+        } catch (MongoException e) {
+            System.err.println("Error de MongoDB: " + e.getMessage());
+        } finally {
+            ConexionMongo.cerrar();
+        }
+    }
+}
